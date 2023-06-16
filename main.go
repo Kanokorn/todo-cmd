@@ -20,7 +20,7 @@ var addTodoCmd = &cobra.Command{
 	Use:  "add todo item",
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		file, err := os.Open("todo.csv")
+		file, err := os.OpenFile("todo.csv", os.O_RDONLY|os.O_CREATE, 0644)
 		if err != nil {
 			log.Fatalln("error open file:", err)
 		}
