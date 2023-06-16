@@ -72,31 +72,56 @@ var addTodoCmd = &cobra.Command{
 	},
 }
 
+var filterTodoCmd = &cobra.Command{
+	Use: "filter todo item",
+	Run: func(cmd *cobra.Command, args []string) {
+		file, err := os.OpenFile("todo.csv", os.O_RDONLY|os.O_CREATE, 0644)
+		if err != nil {
+			log.Fatalln("error open file:", err)
+		}
+		defer file.Close()
+
+		reader := csv.NewReader(file)
+		records, _ := reader.ReadAll()
+
+		var todos []*Todo
+		for _, record := range records {
+			var todo Todo
+			id, _ := strconv.Atoi(record[0])
+			todo.ID = id
+			todo.Description = record[1]
+			todo.Done = record[2]
+
+			todos = append(todos, &todo)
+		}
+
+		if done {
+			for _, todo := range todos {
+				if todo.Done == "Yes" {
+					fmt.Println(todo.ID, todo.Description)
+				}
+			}
+		} else {
+			for _, todo := range todos {
+				if todo.Done == "No" {
+					fmt.Println(todo.ID, todo.Description)
+				}
+			}
+		}
+	},
+}
+
 var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 	},
 }
 
+var done bool
+
 func main() {
 	rootCmd.AddCommand(addTodoCmd)
+
+	filterTodoCmd.Flags().BoolVarP(&done, "done", "d", true, "filter done todo")
+	rootCmd.AddCommand(filterTodoCmd)
 	rootCmd.Execute()
 }
-
-// // go run main.go add "ล้างจาน"
-// >> added "ล้างจาน"
-
-// // go run main.go add "ซักผ้า"
-// >> added "ซักผ้า"
-
-// // go run main.go done
-// >> please select item to mark as done
-// 1. ล้างจาน
-// 2. ซักผ้า
-// >> 1
-// >> "ล้างจาน" is done.
-
-// // go run main.go filter --done
-// 1. ล้างจาน
-
-// // go run main.go filter --not-done
-// 1. ซักผ้า
